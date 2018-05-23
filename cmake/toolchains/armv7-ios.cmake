@@ -6,8 +6,9 @@ if (XCODE)
   message(FATAL_ERROR "This toolchain does not support Xcode.")
 endif ()
 
-set(CMAKE_SYSTEM_PROCESSOR "armv7")
-set(CMAKE_OSX_ARCHITECTURES "armv7")
+set(CMAKE_SYSTEM_PROCESSOR "armv7 -arch arm64 -arch armv7s")
+set(IOS_ARCH armv7 armv7s arm64)
+set(CMAKE_OSX_ARCHITECTURES ${IOS_ARCH})
 
 include("${CMAKE_CURRENT_LIST_DIR}/arm-ios-common.cmake")
 

@@ -1,0 +1,79 @@
+you can find most of instructions for how to build in the README.md
+otherwise, here's the steps i take and some notes for the unity plugin:
+
+
+
+-- MacOS
+
+
+TL;DR: run `sh scripts/macOS.sh`
+
+
+to build macOS, just follow the cmake instructions: `cmake ../draco -G Xcode -DBUILD_UNITY_PLUGIN=ON`
+which will output a .bundle file in /Debug.
+when bringing this into Unity, make sure you restart the editor after copying.
+this is because the lib is fully loaded into memory when unity starts and isn't reloaded on import.
+this may be a unity bug.
+
+
+
+-- Android
+
+
+TL;DR run `sh scripts/android.sh`
+
+
+export CMAKE_ANDROID_NDK=~/Library/Android/sdk/ndk-bundle
+cmake ../draco -DCMAKE_TOOLCHAIN_FILE=../draco/cmake/toolchains/armv7-android-ndk-libcpp.cmake -DBUILD_UNITY_PLUGIN=ON
+
+you can either export a dynamic library (.so) or static (.a)
+i'd build for x86 + armv7 if you're only building for Unity.
+x86 isn't necessary, since most phones with x86 support arm emulation, but it's slower and you might have more bugs without it.
+so if you can spare a bit of extra size to the apk, adding x86 might be good to have.
+NOTE: i didn't have much luck with a static library, so best to go with .so
+
+
+NOTE:
+adding the `-CMAKE_BUILD_TYPE=release` command is super important for optimisation.
+size of the .so is way less + much better decode speed.
+
+
+-- iOS
+
+TL;DR run `sh scripts/iOS.sh`
+
+
+cmake ../draco -DCMAKE_TOOLCHAIN_FILE=../draco/cmake/toolchains/something.cmake -DBUILD_UNITY_PLUGIN=ON
+cmake .
+make VERBOSE=1
+
+
+.a are static libraries. they are embedded in your binary. in vs, these would be equivalent to .lib files.
+.so are dynamic libraries. these are instead separated from your binary and the code is loaded at runtime. they are not embedded.
+these are equivalent to .dll files. they don't seem to be supported on iOS.
+
+
+in Unity, for a extern iOS method, use [DllImport("__Internal")] as opposed to [DllImport("pluginName")]
+
+
+
+to build a static library:
+change add_library(... MODULE) to add_library(... STATIC) in CMakeLists.txt
+also remove the BUNDLE line for unity plugin + SOVERSION line
+
+
+
+lipo -info LIB.a
+to get architecture info for a static lib
+
+
+nm library.a
+to list all methods in a library
+nm library.a | grep method
+
+
+iphone5s for example supports armv6, armv7, arm64.
+cpu architecture compatibility reference:
+https://developer.apple.com/library/content/documentation/DeviceInformation/Reference/iOSDeviceCompatibility/DeviceCompatibilityMatrix/DeviceCompatibilityMatrix.html
+
+

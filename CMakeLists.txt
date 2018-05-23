@@ -41,7 +41,22 @@ option(ENABLE_WERROR "" OFF)
 option(ENABLE_WEXTRA "" OFF)
 option(IGNORE_EMPTY_BUILD_TYPE "" OFF)
 option(BUILD_UNITY_PLUGIN "Build plugin library for Unity" OFF)
+option(UNITY_PLUGIN_BUNDLE "Build .bundle format for Unity" ON)
+option(UNITY_PLUGIN_SHARED "Build .so file for Unity" OFF)
+option(UNITY_PLUGIN_STATIC "Build .a file for Unity" OFF)
 option(BUILD_FOR_GLTF "" OFF)
+
+if (UNITY_PLUGIN_BUNDLE)
+  set(draco_unity_lib_type MODULE)
+endif ()
+
+if (UNITY_PLUGIN_SHARED)
+  set(draco_unity_lib_type SHARED)
+endif ()
+
+if (UNITY_PLUGIN_STATIC)
+  set(draco_unity_lib_type STATIC)
+endif ()
 
 if (BUILD_FOR_GLTF)
   # Override settings when building for GLTF.
@@ -845,7 +860,7 @@ else ()
               $<TARGET_OBJECTS:draco_points_enc>)
   if (BUILD_UNITY_PLUGIN)
     add_library(dracodec_unity
-                MODULE
+                ${draco_unity_lib_type}
                 ${draco_version_sources}
                 $<TARGET_OBJECTS:draco_unity_plugin>
                 $<TARGET_OBJECTS:draco_attributes>
@@ -862,8 +877,7 @@ else ()
                 $<TARGET_OBJECTS:draco_metadata_dec>
                 $<TARGET_OBJECTS:draco_point_cloud>
                 $<TARGET_OBJECTS:draco_points_dec>)
-    # For Mac, we need to build a .bundle for plugin.
-    if (APPLE)
+    if (UNITY_PLUGIN_BUNDLE)
       set_target_properties(dracodec_unity PROPERTIES BUNDLE true)
     endif ()
   endif ()
@@ -881,8 +895,13 @@ else ()
     set_target_properties(dracodec PROPERTIES SOVERSION 1)
     set_target_properties(dracoenc PROPERTIES SOVERSION 1)
     set_target_properties(draco PROPERTIES SOVERSION 1)
-    if (BUILD_UNITY_PLUGIN)
+    
+    if (UNITY_PLUGIN_SHARED)
       set_target_properties(dracodec_unity PROPERTIES SOVERSION 1)
+    endif ()
+
+    if (UNITY_PLUGIN_STATIC)
+      set_target_properties(dracodec_unity PROPERTIES STATIC 1)
     endif ()
   endif ()
 
