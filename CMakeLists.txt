@@ -895,7 +895,6 @@ else ()
     set_target_properties(dracodec PROPERTIES SOVERSION 1)
     set_target_properties(dracoenc PROPERTIES SOVERSION 1)
     set_target_properties(draco PROPERTIES SOVERSION 1)
-    
     if (UNITY_PLUGIN_SHARED)
       set_target_properties(dracodec_unity PROPERTIES SOVERSION 1)
     endif ()
